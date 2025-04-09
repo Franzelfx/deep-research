@@ -26,17 +26,16 @@ type ResearchResult = {
   visitedUrls: string[];
 };
 
-// increase this if you have higher API rate limits
+// Erhöhe diesen Wert, wenn du höhere API-Ratenlimits hast
 const ConcurrencyLimit = Number(process.env.FIRECRAWL_CONCURRENCY) || 2;
 
-// Initialize Firecrawl with optional API key and optional base url
-
+// Initialisiere Firecrawl mit optionalem API-Schlüssel und optionaler Basis-URL
 const firecrawl = new FirecrawlApp({
   apiKey: process.env.FIRECRAWL_KEY ?? '',
   apiUrl: process.env.FIRECRAWL_BASE_URL,
 });
 
-// take en user query, return a list of SERP queries
+// Nimm eine Nutzeranfrage entgegen und gib eine Liste von SERP-Abfragen zurück
 async function generateSerpQueries({
   query,
   numQueries = 3,
@@ -44,36 +43,32 @@ async function generateSerpQueries({
 }: {
   query: string;
   numQueries?: number;
-
-  // optional, if provided, the research will continue from the last learning
+  // Optional, falls vorhanden, wird die Recherche auf den letzten Erkenntnissen aufgebaut
   learnings?: string[];
 }) {
   const res = await generateObject({
     model: getModel(),
     system: systemPrompt(),
-    prompt: `Given the following prompt from the user, generate a list of SERP queries to research the topic. Return a maximum of ${numQueries} queries, but feel free to return less if the original prompt is clear. Make sure each query is unique and not similar to each other: <prompt>${query}</prompt>\n\n${
-      learnings
-        ? `Here are some learnings from previous research, use them to generate more specific queries: ${learnings.join(
-            '\n',
-          )}`
+    prompt: `Basierend auf dem folgenden Nutzer-Prompt, erstelle eine Liste von SERP-Abfragen zur Recherche des Themas. Gib maximal ${numQueries} Abfragen zurück, du kannst aber auch weniger angeben, wenn der ursprüngliche Prompt eindeutig ist. Stelle sicher, dass jede Abfrage einzigartig ist und sich von den anderen unterscheidet: <prompt>${query}</prompt>\n\n${learnings
+        ? `Hier sind einige Erkenntnisse aus vorherigen Recherchen, nutze diese, um spezifischere Abfragen zu erstellen: ${learnings.join('\n')}`
         : ''
-    }`,
+      }`,
     schema: z.object({
       queries: z
         .array(
           z.object({
-            query: z.string().describe('The SERP query'),
+            query: z.string().describe('Die SERP-Abfrage'),
             researchGoal: z
               .string()
               .describe(
-                'First talk about the goal of the research that this query is meant to accomplish, then go deeper into how to advance the research once the results are found, mention additional research directions. Be as specific as possible, especially for additional research directions.',
+                'Beschreibe zunächst das Ziel der Recherche, das mit dieser Abfrage verfolgt wird, und gehe anschließend darauf ein, wie die Recherche fortgesetzt werden soll, sobald Ergebnisse vorliegen. Nenne zusätzliche Forschungsrichtungen. Sei dabei so spezifisch wie möglich, insbesondere bei den zusätzlichen Forschungsrichtungen.',
               ),
           }),
         )
-        .describe(`List of SERP queries, max of ${numQueries}`),
+        .describe(`Liste von SERP-Abfragen, maximal ${numQueries}`),
     }),
   });
-  log(`Created ${res.object.queries.length} queries`, res.object.queries);
+  log(`Erstellt ${res.object.queries.length} Abfragen`, res.object.queries);
 
   return res.object.queries.slice(0, numQueries);
 }
@@ -92,27 +87,27 @@ async function processSerpResult({
   const contents = compact(result.data.map(item => item.markdown)).map(content =>
     trimPrompt(content, 25_000),
   );
-  log(`Ran ${query}, found ${contents.length} contents`);
+  log(`Ausgeführt: ${query}, gefunden: ${contents.length} Inhalte`);
 
   const res = await generateObject({
     model: getModel(),
     abortSignal: AbortSignal.timeout(60_000),
     system: systemPrompt(),
     prompt: trimPrompt(
-      `Given the following contents from a SERP search for the query <query>${query}</query>, generate a list of learnings from the contents. Return a maximum of ${numLearnings} learnings, but feel free to return less if the contents are clear. Make sure each learning is unique and not similar to each other. The learnings should be concise and to the point, as detailed and information dense as possible. Make sure to include any entities like people, places, companies, products, things, etc in the learnings, as well as any exact metrics, numbers, or dates. The learnings will be used to research the topic further.\n\n<contents>${contents
+      `Basierend auf den folgenden Inhalten einer SERP-Suche für die Abfrage <query>${query}</query>, erstelle eine Liste von Erkenntnissen. Gib maximal ${numLearnings} Erkenntnisse zurück, du kannst aber auch weniger angeben, wenn die Inhalte eindeutig sind. Stelle sicher, dass jede Erkenntnis einzigartig ist und sich von den anderen unterscheidet. Die Erkenntnisse sollten prägnant und auf den Punkt gebracht sein, so detailliert und informationsreich wie möglich. Achte darauf, alle Entitäten wie Personen, Orte, Unternehmen, Produkte, Dinge usw. sowie genaue Kennzahlen, Zahlen oder Daten zu berücksichtigen. Diese Erkenntnisse werden verwendet, um das Thema weiter zu erforschen.\n\n<contents>${contents
         .map(content => `<content>\n${content}\n</content>`)
         .join('\n')}</contents>`,
     ),
     schema: z.object({
-      learnings: z.array(z.string()).describe(`List of learnings, max of ${numLearnings}`),
+      learnings: z.array(z.string()).describe(`Liste von Erkenntnissen, maximal ${numLearnings}`),
       followUpQuestions: z
         .array(z.string())
         .describe(
-          `List of follow-up questions to research the topic further, max of ${numFollowUpQuestions}`,
+          `Liste von Folgefragen zur weiteren Erforschung des Themas, maximal ${numFollowUpQuestions}`,
         ),
     }),
   });
-  log(`Created ${res.object.learnings.length} learnings`, res.object.learnings);
+  log(`Erstellt ${res.object.learnings.length} Erkenntnisse`, res.object.learnings);
 
   return res.object;
 }
@@ -134,15 +129,15 @@ export async function writeFinalReport({
     model: getModel(),
     system: systemPrompt(),
     prompt: trimPrompt(
-      `Given the following prompt from the user, write a final report on the topic using the learnings from research. Make it as as detailed as possible, aim for 3 or more pages, include ALL the learnings from research:\n\n<prompt>${prompt}</prompt>\n\nHere are all the learnings from previous research:\n\n<learnings>\n${learningsString}\n</learnings>`,
+      `Basierend auf dem folgenden Nutzer-Prompt, schreibe einen abschließenden Bericht über das Thema unter Verwendung der gewonnenen Erkenntnisse aus der Recherche. Gestalte den Bericht so detailliert wie möglich, strebe 3 oder mehr Seiten an und schließe ALLE Erkenntnisse ein:\n\n<prompt>${prompt}</prompt>\n\nHier sind alle Erkenntnisse aus vorherigen Recherchen:\n\n<learnings>\n${learningsString}\n</learnings>`,
     ),
     schema: z.object({
-      reportMarkdown: z.string().describe('Final report on the topic in Markdown'),
+      reportMarkdown: z.string().describe('Abschließender Bericht zum Thema in Markdown'),
     }),
   });
 
-  // Append the visited URLs section to the report
-  const urlsSection = `\n\n## Sources\n\n${visitedUrls.map(url => `- ${url}`).join('\n')}`;
+  // Füge den Abschnitt der besuchten URLs zum Bericht hinzu
+  const urlsSection = `\n\n## Quellen\n\n${visitedUrls.map(url => `- ${url}`).join('\n')}`;
   return res.object.reportMarkdown + urlsSection;
 }
 
@@ -161,12 +156,12 @@ export async function writeFinalAnswer({
     model: getModel(),
     system: systemPrompt(),
     prompt: trimPrompt(
-      `Given the following prompt from the user, write a final answer on the topic using the learnings from research. Follow the format specified in the prompt. Do not yap or babble or include any other text than the answer besides the format specified in the prompt. Keep the answer as concise as possible - usually it should be just a few words or maximum a sentence. Try to follow the format specified in the prompt (for example, if the prompt is using Latex, the answer should be in Latex. If the prompt gives multiple answer choices, the answer should be one of the choices).\n\n<prompt>${prompt}</prompt>\n\nHere are all the learnings from research on the topic that you can use to help answer the prompt:\n\n<learnings>\n${learningsString}\n</learnings>`,
+      `Basierend auf dem folgenden Nutzer-Prompt, schreibe eine endgültige Antwort zum Thema unter Verwendung der gewonnenen Erkenntnisse aus der Recherche. Halte dich an das im Prompt angegebene Format. Vermeide unnötige Zusätze und liefere ausschließlich die Antwort im vorgegebenen Format. Die Antwort soll so prägnant wie möglich sein – in der Regel nur wenige Worte oder maximal ein Satz. Versuche, das im Prompt angegebene Format einzuhalten (zum Beispiel, wenn der Prompt Latex verwendet, sollte die Antwort in Latex sein. Falls der Prompt mehrere Antwortmöglichkeiten bietet, sollte die Antwort eine dieser Optionen sein).\n\n<prompt>${prompt}</prompt>\n\nHier sind alle Erkenntnisse aus der Recherche, die dir helfen können, den Prompt zu beantworten:\n\n<learnings>\n${learningsString}\n</learnings>`,
     ),
     schema: z.object({
       exactAnswer: z
         .string()
-        .describe('The final answer, make it short and concise, just the answer, no other text'),
+        .describe('Die endgültige Antwort, kurz und prägnant, nur die Antwort ohne zusätzlichen Text'),
     }),
   });
 
@@ -225,7 +220,7 @@ export async function deepResearch({
             scrapeOptions: { formats: ['markdown'] },
           });
 
-          // Collect URLs from this search
+          // Sammle URLs aus dieser Suche
           const newUrls = compact(result.data.map(item => item.url));
           const newBreadth = Math.ceil(breadth / 2);
           const newDepth = depth - 1;
@@ -239,7 +234,7 @@ export async function deepResearch({
           const allUrls = [...visitedUrls, ...newUrls];
 
           if (newDepth > 0) {
-            log(`Researching deeper, breadth: ${newBreadth}, depth: ${newDepth}`);
+            log(`Vertiefe die Recherche, Breite: ${newBreadth}, Tiefe: ${newDepth}`);
 
             reportProgress({
               currentDepth: newDepth,
@@ -249,8 +244,8 @@ export async function deepResearch({
             });
 
             const nextQuery = `
-            Previous research goal: ${serpQuery.researchGoal}
-            Follow-up research directions: ${newLearnings.followUpQuestions.map(q => `\n${q}`).join('')}
+            Vorheriges Forschungsziel: ${serpQuery.researchGoal}
+            Nachfolgende Forschungsrichtungen: ${newLearnings.followUpQuestions.map(q => `\n${q}`).join('')}
           `.trim();
 
             return deepResearch({
@@ -274,9 +269,9 @@ export async function deepResearch({
           }
         } catch (e: any) {
           if (e.message && e.message.includes('Timeout')) {
-            log(`Timeout error running query: ${serpQuery.query}: `, e);
+            log(`Timeout-Fehler bei der Ausführung der Abfrage: ${serpQuery.query}: `, e);
           } else {
-            log(`Error running query: ${serpQuery.query}: `, e);
+            log(`Fehler bei der Ausführung der Abfrage: ${serpQuery.query}: `, e);
           }
           return {
             learnings: [],

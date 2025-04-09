@@ -1,5 +1,7 @@
 import * as fs from 'fs/promises';
 import * as readline from 'readline';
+import 'dotenv/config';
+
 
 import { getModel } from './ai/providers';
 import {
