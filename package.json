@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
-    "start": "node dist/run.js",
+    "start": "node dist/api.js",
     "docker": "node dist/api.js",
     "api": "node dist/api.js"
   },
