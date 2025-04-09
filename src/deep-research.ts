@@ -4,8 +4,8 @@ import { compact } from 'lodash-es';
 import pLimit from 'p-limit';
 import { z } from 'zod';
 
-import { getModel, trimPrompt } from './ai/providers';
-import { systemPrompt } from './prompt';
+import { getModel, trimPrompt } from './ai/providers.js';
+import { systemPrompt } from './prompt.js';
 
 function log(...args: any[]) {
   console.log(...args);

@@ -2,13 +2,13 @@
   "name": "open-deep-research",
   "version": "0.0.1",
   "main": "index.ts",
+  "type": "module",
   "scripts": {
-    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "tsx": "tsx --env-file=.env.local",
-    "start": "tsx --env-file=.env.local src/run.ts",
-    "api": "tsx --env-file=.env.local src/api.ts",
-    "docker": "tsx src/run.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
+    "start": "node dist/run.js",
+    "docker": "node dist/api.js",
+    "api": "node dist/api.js"
   },
   "author": "",
   "license": "ISC",
@@ -30,6 +30,7 @@
     "@mendable/firecrawl-js": "^1.16.0",
     "ai": "^4.1.17",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^4.18.3",
     "js-tiktoken": "^1.0.17",
     "lodash-es": "^4.17.21",

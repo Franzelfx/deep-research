@@ -1,8 +1,8 @@
 import { generateObject } from 'ai';
 import { z } from 'zod';
 
-import { getModel } from './ai/providers';
-import { systemPrompt } from './prompt';
+import { getModel } from './ai/providers.js';
+import { systemPrompt } from './prompt.js';
 
 export async function generateFeedback({
   query,

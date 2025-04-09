@@ -2,7 +2,7 @@ import cors from 'cors';
 import express, { Request, Response } from 'express';
 import 'dotenv/config';
 
-import { deepResearch, writeFinalAnswer } from './deep-research';
+import { deepResearch, writeFinalAnswer } from './deep-research.js';
 
 const app = express();
 const port = process.env.PORT || 3051;

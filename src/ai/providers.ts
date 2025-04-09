@@ -7,7 +7,7 @@ import {
 } from 'ai';
 import { getEncoding } from 'js-tiktoken';
 
-import { RecursiveCharacterTextSplitter } from './text-splitter';
+import { RecursiveCharacterTextSplitter } from './text-splitter.js';
 
 // Providers
 const openai = process.env.OPENAI_KEY
