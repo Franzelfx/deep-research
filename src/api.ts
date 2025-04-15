@@ -16,6 +16,11 @@ function log(...args: any[]) {
   console.log(...args);
 }
 
+// Health check endpoint
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // API endpoint to run research
 app.post('/api/research', async (req: Request, res: Response) => {
   try {
