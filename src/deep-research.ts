@@ -49,7 +49,8 @@ async function generateSerpQueries({
   const res = await generateObject({
     model: getModel(),
     system: systemPrompt(),
-    prompt: `Basierend auf dem folgenden Nutzer-Prompt, erstelle eine Liste von SERP-Abfragen zur Recherche des Themas. Gib maximal ${numQueries} Abfragen zurück, du kannst aber auch weniger angeben, wenn der ursprüngliche Prompt eindeutig ist. Stelle sicher, dass jede Abfrage einzigartig ist und sich von den anderen unterscheidet: <prompt>${query}</prompt>\n\n${learnings
+    prompt: `Basierend auf dem folgenden Nutzer-Prompt, erstelle eine Liste von SERP-Abfragen zur Recherche des Themas. Gib maximal ${numQueries} Abfragen zurück, du kannst aber auch weniger angeben, wenn der ursprüngliche Prompt eindeutig ist. Stelle sicher, dass jede Abfrage einzigartig ist und sich von den anderen unterscheidet.
+    Gib ausserdem nütliche Metadaten aus, wie Deadlines und Links. Der Prompt lautet: <prompt>${query}</prompt>\n\n${learnings
         ? `Hier sind einige Erkenntnisse aus vorherigen Recherchen, nutze diese, um spezifischere Abfragen zu erstellen: ${learnings.join('\n')}`
         : ''
       }`,
